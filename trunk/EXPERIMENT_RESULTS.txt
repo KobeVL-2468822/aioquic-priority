@@ -1,0 +1,41 @@
+Following datasets
+- 20240214_qlog
+- 20240221_qlog
+- 20240229_qlog
+- 20240328_qlog
+
+Had the following settings applied:
+- Stagger = 0.2 seconds (200ms)
+- #request_count = 10
+
+---------------
+Following datasets
+- 20240403_qlog
+
+Had the following settings applied:
+- Stagger = 0.05 seconds (50ms)
+
+New tests includes:
+- mixed-signals
+
+
+---------------
+We can't draw conclusions on the preframes in the previous mixed-signals testcase for reprioritization. Reprio with post is fine; pre-frames followed by headers are difficult to confirm since:
+- Instant: We can't be 100% sure the request was received after the instant-preframes case
+- With delay: assume stream X has a preframe with 100ms delay, then the server will fill the available bandwidth with stream X+4 etc; once the 100ms pass and the request is received, we can't be sure that the server is acting on the priority fields in the header or if it's acting on the "streams with the same priority should be sent in ascending stream ID" rule
+
+To be sure: the preframes case should send frames with a low priority and set headers containing an urgency higher than the other streams!
+
+Following datasets
+- 20240405_qlog
+
+Had the following settings applied:
+- Stagger = 0.05 seconds (50ms)
+
+New tests includes:
+- reprioritization-50ms
+
+Removed tests:
+- mixed-signals
+
+---------------------

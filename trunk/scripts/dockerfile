@@ -1,0 +1,18 @@
+FROM ubuntu:latest
+
+RUN 						\
+	apt-get update 			\
+	&& apt-get upgrade -y 	\
+	&& apt-get install -y git-core curl nano libssl-dev python3-dev python3-pip iproute2
+
+RUN git clone https://github.com/http3-prioritization/aioquic.git /srv/aioquic \
+    && cd /srv/aioquic \
+    && git fetch \
+    && git checkout server-priority-validation
+
+RUN cd /srv/aioquic \
+  && pip3 install -e . \
+  && pip3 install asgiref dnslib "flask<2.2" httpbin starlette "werkzeug<2.1" wsproto aiofiles \
+  && mkdir /srv/aioquic/qlog/
+
+ENTRYPOINT ["bash"]
