@@ -320,9 +320,6 @@ class QuicStream:
         max_stream_data_remote: int = 0,
         readable: bool = True,
         writable: bool = True,
-        # Added urgency and incremental attributes (prioritization)
-        urgency: int = 0,
-        incremental: bool = False,
     ) -> None:
         self.is_blocked = False
         self.max_stream_data_local = max_stream_data_local
@@ -331,9 +328,6 @@ class QuicStream:
         self.receiver = QuicStreamReceiver(stream_id=stream_id, readable=readable)
         self.sender = QuicStreamSender(stream_id=stream_id, writable=writable)
         self.stream_id = stream_id
-        # Added urgency and incremental attributes (prioritization)
-        self.urgency = urgency
-        self.incremental = incremental
 
     @property
     def is_finished(self) -> bool:

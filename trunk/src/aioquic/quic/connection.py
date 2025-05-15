@@ -414,9 +414,6 @@ class QuicConnection:
             0x1E: (self._handle_handshake_done_frame, EPOCHS("1")),
             0x30: (self._handle_datagram_frame, EPOCHS("01")),
             0x31: (self._handle_datagram_frame, EPOCHS("01")),
-            # Added reference to a priority frame handler
-            0xF0700: (self._handle_priority_frame, EPOCHS("01")),
-            0xF0701: (self._handle_priority_frame, EPOCHS("01")),
         }
 
     @property
@@ -426,82 +423,6 @@ class QuicConnection:
     @property
     def original_destination_connection_id(self) -> bytes:
         return self._original_destination_connection_id
-
-    # Method to handle priority frames to update urgency and incremental attributes of a stream
-    def _handle_priority_frame(self, context: QuicReceiveContext, frame_type: int, buf: Buffer) -> None:
-        print("ENTERED PRIORITY FRAME")
-        """
-        Handle a PRIORITY frame.
-        """
-        """
-        start = buf.tell()
-        if frame_type == QuicFrameType.DATAGRAM_WITH_LENGTH:
-            length = buf.pull_uint_var()
-        else:
-            length = buf.capacity - start
-        data = buf.pull_bytes(length)
-
-        # log frame
-        if self._quic_logger is not None:
-            context.quic_logger_frames.append(
-                self._quic_logger.encode_datagram_frame(length=length)
-            )
-        """
-        # get stream_id, urgency and incremental from buffer
-        stream_id = buf.pull_uint_var()
-
-        priority_field_value = buf.data_slice(buf.tell(), buf.size).decode("utf-8").strip()
-
-        #Default values
-        urgency = 3
-        incremental = False
-
-        for part in priority_field_value.split(","):
-            part = part.strip()
-            if part.startswith("u="):
-                urgency = int(part[2:])
-            elif part == "i":
-                incremental = True
-
-        for i in range(100):        
-            print(f"Changed: urgency - {urgency}, incremental - {incremental}")
-        # edit stream
-        stream = self._streams.get(stream_id)
-        if stream is not None:
-            stream.urgency = urgency
-            stream.incremental = incremental
-
-        """
-        priority_value = buf.read_int(2) # Priority (2 bytes: urgency, incremental)
-
-        urgency = (priority_value >> 8) & 0xFF # first 8 bits (urgency)
-        incremental = (priority_value & 0x01) == 0x01 # last 8 bits (incremental)
-
-        for stream in self._streams.values():
-            if stream.stream_id == stream_id:
-                # update urgency and incremental
-                stream.urgency = urgency
-                stream.incremental = incremental
-                break
-        """
-        # TODO: Add error code if stream does not exist
-
-
-
-    def _handle_priority_frame_control(self, stream_id: int, urgency: int, incremental: bool) -> None:
-        print("ENTERED PRIORITY FRAME")
-    
-        for i in range(3):        
-            print(f"Changed: urgency - {urgency}, incremental - {incremental}")
-        # edit stream
-        stream = self._streams.get(stream_id)
-        if stream is not None:
-            stream.urgency = urgency
-            stream.incremental = incremental
-
-        
-        # TODO: Add error code if stream does not exist
-
 
     def change_connection_id(self) -> None:
         """
@@ -1165,27 +1086,6 @@ class QuicConnection:
         :param data: The data to be sent.
         :param end_stream: If set to `True`, the FIN bit will be set.
         """
-        # priority
-        foundStream = self._get_or_create_stream_for_send(stream_id)
-        urgencyOfStream = foundStream.urgency
-
-        if stream_id % 4 == 0:
-            foundStream.urgency = 7
- 
-        
-        while(True):
-            urgency_is_highest = True
-            print(f"kek {urgencyOfStream}")
-            if stream_id % 4 == 0:
-                for stream_entry in self._streams.values():
-                    if stream_entry.stream_id % 4 ==0:
-                        if stream_entry.urgency < urgencyOfStream:
-                            print(f"wait: myUrgency: {urgencyOfStream}, stream {stream_entry.stream_id} - {stream_entry.urgency}")
-                            urgency_is_highest = False
-            
-            if(urgency_is_highest == True):
-                break
-
         stream = self._get_or_create_stream_for_send(stream_id)
         stream.sender.write(data, end_stream=end_stream)
 
@@ -2362,7 +2262,6 @@ class QuicConnection:
         is_probing = None
         while not buf.eof():
             frame_type = buf.pull_uint_var()
-            #print(f"{frame_type}")
 
             # check frame type is known
             try:

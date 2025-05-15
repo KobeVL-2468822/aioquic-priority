@@ -511,29 +511,6 @@ class H3Connection:
         """
         return self._sent_settings
 
-    def send_priority_frame(self, stream_id: int, urgency: int = 3, incremental: bool = False):
-        """
-        Send a priority update frame on the local control stream for the given stream_id
-        """
-        priority_field = f"u={urgency}"
-        if incremental:
-            priority_field += ", i"
-        frame_data = encode_frame(FrameType.PRIORITY_UPDATE, encode_uint_var(stream_id) + bytes(priority_field, "utf-8"))
-        self._quic.send_stream_data(
-            self._local_control_stream_id,
-            frame_data
-        )
-
-        # qlog
-        if self._quic_logger is not None:
-            self._quic_logger.log_event(
-                category="http",
-                event="frame_created",  # Low level frame_created event; TODO priority_updated event
-                data=self._quic_logger.encode_priority_update_frame(
-                    length=len(frame_data), elementID=stream_id, fieldValue=priority_field, stream_id=self._local_control_stream_id
-                ),
-            )
-
     def _create_uni_stream(
         self, stream_type: int, push_id: Optional[int] = None
     ) -> int:
@@ -637,7 +614,6 @@ class H3Connection:
             fieldValue = buf.pull_bytes( buf.capacity - buf.tell() )
 
             logger.debug(f"PRIORITY_UPDATE frame received for stream {elementID} with value {frame_data.hex()} => { fieldValue.decode('ascii') }")
-            self._quic._handle_priority_frame_control(elementID,fieldValue.decode('ascii'), False )
 
             if self._quic_logger is not None:
                 self._quic_logger.log_event(

@@ -337,31 +337,6 @@ class QuicFileLogger(QuicLogger):
         with open(trace_path, "w") as logger_fp:
             json.dump(
                 {
-                    "qlog_path": trace_path,
-                    "qlog_format": "JSON",
-                    "qlog_version": QLOG_VERSION,
-                    "traces": [trace_dict],
-                },
-                logger_fp,
-            )
-        self._traces.remove(trace)
-
-class QuicSingleFileLogger(QuicLogger):
-    """
-    A QUIC event logger which writes one trace per file.
-    """
-
-    def __init__(self, file_path: str) -> None:
-        self.path = file_path
-        super().__init__()
-
-    def end_trace(self, trace: QuicLoggerTrace) -> None:
-        trace_dict = trace.to_dict()
-        trace_path = self.path
-        with open(trace_path, "w") as logger_fp:
-            json.dump(
-                {
-                    "qlog_path": trace_path,
                     "qlog_format": "JSON",
                     "qlog_version": QLOG_VERSION,
                     "traces": [trace_dict],

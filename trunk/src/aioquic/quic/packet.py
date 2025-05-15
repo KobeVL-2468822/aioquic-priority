@@ -431,6 +431,8 @@ class QuicFrameType(IntEnum):
     HANDSHAKE_DONE = 0x1E
     DATAGRAM = 0x30
     DATAGRAM_WITH_LENGTH = 0x31
+    # Priority Update
+    PRIORITY_UPDATE=0xF0701
 
 
 NON_ACK_ELICITING_FRAME_TYPES = frozenset(
