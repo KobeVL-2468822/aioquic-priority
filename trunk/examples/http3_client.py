@@ -275,8 +275,8 @@ class HttpClient(QuicConnectionProtocol):
         # log event
         if self._quic_logger is not None:
             self._quic_logger.log_event(
-                category="transport",
-                event="priority_update",
+                category="http",
+                event="priority_updated",
                 data=self.set_priority_update_parameters_log(
                     owner="local", parameters=parameters
                 ),
